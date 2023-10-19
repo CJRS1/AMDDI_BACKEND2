@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 export const crearAsesorVentas = async (req, res) => {
     try {
         const { email, pwd_hash, nombre, apeMat, apePat, dni, celular, pais } = req.body;
-        const existingAsesorVentas = await prisma.asesor_ventas.findUnique({
+        const existingAsesorVentas = await prisma.asesorVentas.findUnique({
             where: {
                 email: email,
             },
@@ -16,7 +16,7 @@ export const crearAsesorVentas = async (req, res) => {
             // El correo electrónico ya está en uso
             return res.status(400).json({ msg: "El correo electrónico ya está registrado." });
         }
-        const existingDNI = await prisma.asesor_ventas.findUnique({
+        const existingDNI = await prisma.asesorVentas.findUnique({
             where: {
                 dni: dni,
             },
@@ -31,7 +31,7 @@ export const crearAsesorVentas = async (req, res) => {
         const hashedPwd = await bcrypt.hash(pwd_hash, saltRounds);
 
         // Iniciar transacción
-        const nuevoAsesorVentas = await prisma.asesor_ventas.create({
+        const nuevoAsesorVentas = await prisma.asesorVentas.create({
             data: {
                 email,
                 pwd_hash: hashedPwd, // Almacena la contraseña hasheada
@@ -63,7 +63,7 @@ export const traerAsesorVentasPorToken = async (req, res) => {
         const tokenWithoutBearer = token.replace('Bearer ', ''); // Elimina "Bearer "
         const decoded = jwt.verify(tokenWithoutBearer, secretKey);
         console.log("hola", decoded);
-        const asesorVentas = await prisma.asesor_ventas.findUnique({
+        const asesorVentas = await prisma.asesorVentas.findUnique({
             where: {
                 email: decoded.email,
             },
@@ -97,7 +97,7 @@ export const traerAsesorVentasPorToken = async (req, res) => {
 
 export const listarAsesorVentas = async (req, res) => {
     try {
-        const asesoresVentas = await prisma.asesor_ventas.findMany();
+        const asesoresVentas = await prisma.asesorVentas.findMany();
         return res.status(200).json({
             message: "Asesor Ventas encontrados",
             content: asesoresVentas,
@@ -113,7 +113,7 @@ export const listarAsesorVentas = async (req, res) => {
 export const traerAsesorVentasPorId = async (req, res) => {
     const { id } = req.params;
     try {
-        const asesorVentas = await prisma.asesor_ventas.findUnique({
+        const asesorVentas = await prisma.asesorVentas.findUnique({
             where: {
                 id: Number(id),
             },
@@ -139,7 +139,7 @@ export const actualizarAsesorVentas = async (req, res) => {
     const { id } = req.params;
     const data = req.body;
     try {
-        const findAsesorVentas = await prisma.asesor_ventas.findUnique({
+        const findAsesorVentas = await prisma.asesorVentas.findUnique({
             where: {
                 id: Number(id),
             },
@@ -159,7 +159,7 @@ export const actualizarAsesorVentas = async (req, res) => {
         //         message: "El correo electrónico no es válido",
         //     });
         // }
-        const asesorVentas = await prisma.asesor_ventas.update({
+        const asesorVentas = await prisma.asesorVentas.update({
             where: {
                 id: Number(id),
             },
@@ -203,7 +203,7 @@ export const actualizarAsesorVentas = async (req, res) => {
 export const eliminarAsesorVentas = async (req, res) => {
     const { id } = req.params;
     try {
-        const findAsesorVentas = await prisma.asesor_ventas.findUnique({
+        const findAsesorVentas = await prisma.asesorVentas.findUnique({
             where: {
                 id: Number(id),
             },
@@ -214,7 +214,7 @@ export const eliminarAsesorVentas = async (req, res) => {
             });
         }
 
-        await prisma.asesor_ventas.delete({
+        await prisma.asesorVentas.delete({
             where: {
                 id: Number(id),
             },
