@@ -6,6 +6,122 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
+
+model asesorVentas {
+  id           Int     @id @default(autoincrement())
+  pwd_hash     String  @db.VarChar(100)
+  email        String  @unique @db.VarChar(191)
+  nombre       String  @db.VarChar(50)
+  apeMat       String  @map("apellido_paterno") @db.VarChar(50)
+  apePat       String  @map("apellido_materno") @db.VarChar(50)
+  dni          String  @unique @db.VarChar(8)
+  celular      String? @unique @db.VarChar(18)
+  pais         String?
+  rol          String? @default("normal")
+  departamento String  @db.VarChar(50)
+  createdAt    String  @map("created_at")
+
+  asignacion_potencial  asignacion_potencial[]
+  asignacion_concretada asignacion_concretada[]
+
+  @@map("asesor_ventas")
+}
+
+model clientePotencial {
+  id           Int     @id @default(autoincrement())
+  id_amddi     String?
+  email        String  @unique @db.VarChar(191)
+  nombre       String  @db.VarChar(50)
+  apeMat       String  @map("apellido_paterno") @db.VarChar(50)
+  apePat       String  @map("apellido_materno") @db.VarChar(50)
+  dni          String  @unique @db.VarChar(8)
+  celular      String? @unique @db.VarChar(18)
+  pais         String?
+  categoria    String? @default("normal")
+  departamento String  @db.VarChar(50)
+  carrera      String  @db.VarChar(30)
+  tema         String? @db.VarChar(255)
+  fecha_cumpleanos String? @db.VarChar(255)
+
+  proveniencia String? @db.VarChar(255)
+  estado_venta String? @db.VarChar(255)
+  observacion  String? @db.VarChar(255)
+
+  link_reunion          String? @db.VarChar(255)
+  fecha_reunion        String? @db.VarChar(255)
+
+  urgencia     String? @db.VarChar(255)
+  concretado   String  @default(value: "false")
+
+  servicio       String @unique @db.VarChar(200)
+  monto_total    Float? @default(0)
+  monto_restante Float? @default(0)
+  monto_pagado   Float? @default(0)
+
+  institucion_educativa String? @db.VarChar(255)
+
+  // asesor_ventas         String?
+  createdAt String @map("created_at")
+
+  asignacion_potencial asignacion_potencial[]
+
+  @@map("cliente_potencial")
+}
+
+model clienteConcretado {
+  id           Int     @id @default(autoincrement())
+  id_amddi     String?
+  email        String  @unique @db.VarChar(191)
+  nombre       String  @db.VarChar(50)
+  apeMat       String  @map("apellido_paterno") @db.VarChar(50)
+  apePat       String  @map("apellido_materno") @db.VarChar(50)
+  dni          String  @unique @db.VarChar(8)
+  celular      String? @unique @db.VarChar(18)
+  pais         String?
+  categoria    String? @default("normal")
+  departamento String  @db.VarChar(50)
+  carrera      String  @db.VarChar(30)
+  tema         String? @db.VarChar(255)
+  fecha_cumpleanos String? @db.VarChar(255)
+
+  link_reunion          String? @db.VarChar(255)
+  fecha_reunion        String? @db.VarChar(255)
+
+  concretado   String  @default(value: "false")
+
+  servicio       String @unique @db.VarChar(200)
+  monto_total    Float? @default(0)
+  monto_restante Float? @default(0)
+  monto_pagado   Float? @default(0)
+
+  institucion_educativa String? @db.VarChar(255)
+
+  // asesor_ventas         String?
+  createdAt String @map("created_at")
+
+  asignacion_concretada asignacion_concretada[]
+
+  @@map("cliente_concretado")
+}
+
+model asignacion_potencial {
+  id                   Int @id @default(autoincrement())
+  id_asesor_venta      Int
+  id_cliente_potencial Int
+
+  clientePotencial clientePotencial @relation(fields: [id_cliente_potencial], references: [id])
+  asesorVentas     asesorVentas     @relation(fields: [id_asesor_venta], references: [id])
+}
+
+model asignacion_concretada {
+  id                    Int @id @default(autoincrement())
+  id_asesor_venta       Int
+  id_cliente_concretado Int
+
+  clienteContretado clienteConcretado @relation(fields: [id_cliente_concretado], references: [id])
+  asesorVentas      asesorVentas      @relation(fields: [id_asesor_venta], references: [id])
+}
+
