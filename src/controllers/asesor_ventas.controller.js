@@ -94,7 +94,6 @@ export const traerAsesorVentasPorToken = async (req, res) => {
     }
 };
 
-
 export const listarAsesorVentas = async (req, res) => {
     try {
         const asesoresVentas = await prisma.asesorVentas.findMany();

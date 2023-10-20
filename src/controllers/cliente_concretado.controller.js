@@ -52,49 +52,6 @@ export const crearClienteConcretado = async (req, res) => {
     }
 };
 
-export const traerClienteConcretadoPorToken = async (req, res) => {
-    try {
-        const token = req.header('Authorization');
-        console.log(token);
-        if (!token) {
-            return res.status(401).json({ message: 'Token no proporcionado' });
-        }
-        const secretKey = process.env.SESSION_SECRET_AV; // Reemplaza con tu clave secreta real
-        const tokenWithoutBearer = token.replace('Bearer ', ''); // Elimina "Bearer "
-        const decoded = jwt.verify(tokenWithoutBearer, secretKey);
-        console.log("hola", decoded);
-        const clienteConcretado = await prisma.clienteConcretado.findUnique({
-            where: {
-                email: decoded.email,
-            },
-            select: {
-                id: true,
-                nombre: true,
-                apeMat: true,
-                apePat: true,
-                email: true,
-                dni: true,
-                celular: true,
-                pais: true,
-                departamento,
-                rol: true,
-            },
-        });
-        console.log("clienteConcretado", clienteConcretado);
-        if (!clienteConcretado) {
-            return res.status(404).json({ message: 'Cliente Concretado no encontrado' });
-        }
-        res.status(200).json({
-            message: "Cliente Concretado encontrado",
-            content: clienteConcretado,
-        });
-    } catch (error) {
-        console.error(error);
-        res.status(401).json({ message: 'Token no válido' });
-    }
-};
-
-
 export const listarClienteConcretado = async (req, res) => {
     try {
         const clientesConcretados = await prisma.clienteConcretado.findMany();
