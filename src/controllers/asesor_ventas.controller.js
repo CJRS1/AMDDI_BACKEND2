@@ -5,8 +5,10 @@ import jwt from "jsonwebtoken";
 const prisma = new PrismaClient();
 
 export const crearAsesorVentas = async (req, res) => {
+    console.log("ingresó aquí");
     try {
-        const { email, pwd_hash, nombre, apeMat, apePat, dni, celular, pais } = req.body;
+        const { email, pwd_hash, nombre, apeMat, apePat, dni, celular, pais, departamento } = req.body;
+        console.log(req.body);
         const existingAsesorVentas = await prisma.asesorVentas.findUnique({
             where: {
                 email: email,
@@ -41,7 +43,8 @@ export const crearAsesorVentas = async (req, res) => {
                 dni,
                 celular,
                 pais,
-                departamento
+                departamento,
+                createdAt: new Date().toISOString()
             },
         });
         res.json({ msg: "AsesorVentas creado exitosamente", asesor: nuevoAsesorVentas });
@@ -76,7 +79,7 @@ export const traerAsesorVentasPorToken = async (req, res) => {
                 dni: true,
                 celular: true,
                 pais: true,
-                departamento,
+                departamento: true,
                 rol: true,
             },
         });
@@ -220,6 +223,108 @@ export const eliminarAsesorVentas = async (req, res) => {
         });
         return res.status(200).json({
             message: "Asesor de Ventas eliminado",
+        });
+    } catch (error) {
+        return res.status(500).json({
+            message: "Error en el servidor",
+            error: error.message,
+        });
+    }
+};
+
+
+export const loginAsesorVentas = async (req, res) => {
+    console.log("hizo el login")
+    try {
+        const { email, password } = req.body;
+        console.log(email, password);
+        // Busca al usuario por su correo electrónico en la base de datos
+        const asesorVentas = await prisma.asesorVentas.findUnique({
+            where: {
+                email,
+            },
+        });
+
+        // Si el usuario no existe, devuelve un error
+        if (!asesorVentas) {
+            return res.status(401).json({ msg: 'Correo electrónico o contraseña incorrectos.' });
+        }
+
+        // Compara la contraseña proporcionada con la contraseña almacenada en la base de datos
+        const isPasswordValid = await bcrypt.compare(password, asesorVentas.pwd_hash);
+
+        // Si la contraseña no coincide, devuelve un error
+        if (!isPasswordValid) {
+            return res.status(401).json({ msg: 'Correo electrónico o contraseña incorrectos.' });
+        }
+        // console.log(!isPasswordValid);
+
+        // Genera un token JWT con el correo electrónico en el payload
+        const secretKey = process.env.SESSION_SECRET_AV; // Reemplaza con tu clave secreta real
+        const payload = {
+            email: asesorVentas.email,
+        };
+        const token = jwt.sign(payload, secretKey);
+
+        // Almacena el token JWT en la sesión del usuario (opcional)
+        req.session.token = token;
+        console.log(token);
+        console.log(asesorVentas.rol);
+        // Devuelve el token en la respuesta
+        res.json({ token, rol: asesorVentas.rol });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ msg: 'Error en el servidor.' });
+    }
+};
+
+export const logoutAsesorVentas = (req, res) => {
+    try {
+        // Si estás utilizando tokens JWT, puedes invalidar el token aquí
+        // Opcionalmente, puedes borrar el token de la sesión si lo almacenaste allí
+
+        // Destruye la sesión en el servidor
+        req.session.destroy((err) => {
+            if (err) {
+                console.error(err);
+                res.status(500).json({ msg: 'Error al cerrar sesión.' });
+            } else {
+                res.clearCookie('sessionCookie'); // Elimina la cookie de sesión (cambia el nombre según tu configuración)
+                res.json({ msg: 'Sesión cerrada con éxito' });
+            }
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ msg: 'Error en el servidor.' });
+    }
+};
+
+export const traerAsesorVentasPorEmail = async (req, res) => {
+    const { email } = req.params;
+    console.log(email);
+    try {
+        const asesorVentas = await prisma.asesorVentas.findUnique({
+            where: {
+                email: email,
+            },
+            select: {
+                id: true,
+                email: true,
+                nombre: true,
+                apeMat: true,
+                apePat: true,
+                dni: true,
+                rol: true
+            }
+        });
+        if (!asesorVentas) {
+            return res.status(404).json({
+                message: "Asesor de ventas no encontrado",
+            });
+        }
+        return res.status(200).json({
+            message: "Asesor de ventas encontrado",
+            content: asesorVentas,
         });
     } catch (error) {
         return res.status(500).json({

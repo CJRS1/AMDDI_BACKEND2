@@ -1,12 +1,15 @@
 import express, { json } from "express";
 import cors from 'cors';
-// import session from 'express-session';
+import session from 'express-session';
+import dotenv from 'dotenv';
 
 // import { setCSPHeader } from "./middleware/cspMiddleware.js"; 
 
 import { asesorVentasRouter } from "./routes/asesor_ventas.routes.js";
 import { clientePotencialRouter } from "./routes/cliente_potencial.routes.js";
 import { clienteContretadoRouter } from "./routes/cliente_concretado.routes.js";
+
+dotenv.config();
 
 const server = express();
 
@@ -22,17 +25,17 @@ server.use(cors({
 
 
 
-// server.use(
-//     session({
-//         secret: process.env.SESSION_SECRET, 
-//         resave: false,
-//         saveUninitialized: true,
-//         cookie: {
-//             secure: false, 
-//             maxAge: 1000 * 60 * 60 * 24, 
-//         },
-//     })
-// );
+server.use(
+    session({
+        secret: process.env.SESSION_SECRET_AV, 
+        resave: false,
+        saveUninitialized: true,
+        cookie: {
+            secure: false, 
+            maxAge: 1000 * 60 * 60 * 24, 
+        },
+    })
+);
 
 const PORT = process.env.PORT ?? 5000;
 
